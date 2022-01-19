@@ -16,7 +16,7 @@ python -m venv .venv
 source .venv/bin/activate # or source .venv/bin/activate.fish
 pip install maturin
 maturin develop --release # Pass --release flag to Cargo for speedups
-python run.py # Runs 1_000_000_000 Monty Hall simulations
+python run.py # Runs timed Monty Hall simulations in Python and Rust
 ```
 
 Run `cargo doc --open` to peruse the documentation. Run `cargo test` to

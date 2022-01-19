@@ -1,14 +1,18 @@
 import monty_pyrs
+import monty
 from timeit import default_timer as timer
 
 def timed_run(func):
+    print("")
+    print(f"Executing {func.__name__}")
+    print("--------------------------------")
     start = timer()
     func()
     end = timer()
     execution_time = end - start
     print(f"Took {execution_time:.4f}s to run {func.__name__}")
 
-def simple_one_billion_runs():
+def rust_simple_one_billion_runs():
     """Call Rust and print the resulting string
 
     No args are passed over the wire and no custom
@@ -17,7 +21,7 @@ def simple_one_billion_runs():
     string_result = monty_pyrs.play_one_billion_times()
     print(string_result)
 
-def complex_one_billion_runs():
+def rust_complex_one_billion_runs():
     """Call Rust and do something with the returned value
 
     The no. of iterations is passed as an argument to a
@@ -31,5 +35,12 @@ def complex_one_billion_runs():
     print(f"Played {iterations} times, winning {switched_pct:.2%} of the time \
 when switching and {stayed_pct:.2%} times when staying")
 
-timed_run(simple_one_billion_runs)
-timed_run(complex_one_billion_runs)
+def python_ten_million_runs():
+    iterations = 10_000_000
+    (switched_pct, stayed_pct) = monty.run(iterations)
+    print(f"Played {iterations} times, winning {switched_pct:.2%} of the time \
+when switching and {stayed_pct:.2%} times when staying")
+
+timed_run(python_ten_million_runs)
+timed_run(rust_simple_one_billion_runs)
+timed_run(rust_complex_one_billion_runs)
