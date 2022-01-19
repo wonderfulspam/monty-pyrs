@@ -36,16 +36,18 @@ struct ResultSet {
 
 /// Tracks results for the two possible strategies: switching and staying.
 #[derive(Default, AddAssign)]
+#[pyclass]
 pub struct Results {
     switched: ResultSet,
     stayed: ResultSet,
 }
 
+#[pymethods]
 impl Results {
     /// Calculate win rates for the two strategies as percentages.
     ///
     /// ```rust
-    /// use monty_rs::{Results, play_threaded};
+    /// use monty_pyrs::{Results, play_threaded};
     /// use assert_approx_eq::assert_approx_eq;
     /// let results: Results = play_threaded(1_000_000);
     /// let (switched_pct, stayed_pct) = results.calc_win_rate();
@@ -74,7 +76,12 @@ where
     }
 
     /// Play a single simulation of the Monty Hall problem.
-    fn play_single(&mut self, switch_doors: bool) -> bool {
+    /// ```rust
+    /// use monty_pyrs::MontyHall;
+    /// let mut monty = MontyHall::default();
+    /// let success = monty.play_single(true);
+    /// ```
+    pub fn play_single(&mut self, switch_doors: bool) -> bool {
         let mut doors: ArrayVec<[i8; 3]> = array_vec![0, 1, 2];
         let correct_door = (self.rng.next_u32() % 3) as i8;
         let mut choice: i8 = 0; // https://xkcd.com/221/, sort of
@@ -98,7 +105,7 @@ where
     /// Half of the simulations use the switching strategy, the other half do not.
     ///
     /// ```rust
-    /// use monty_rs::{MontyHall, Results};
+    /// use monty_pyrs::{MontyHall, Results};
     /// let mut monty = MontyHall::default();
     /// let results: Results = monty.play_multiple(1_000_000);
     /// ```
@@ -133,15 +140,14 @@ impl Default for MontyHall<XorShiftRng> {
     }
 }
 
-/// A wrapper around [play_multiple](fn.play_multiple.html) that splits the work by
+/// A wrapper around [MontyHall::play_multiple] that splits the work by
 /// the amount of logical CPUs available.
 ///
 /// ```rust
-/// use monty_rs::{Results, play_threaded};
+/// use monty_pyrs::{Results, play_threaded};
 /// let results: Results = play_threaded(1_000_000);
 /// ```
-#[pyfunction]
-pub fn play_threaded(iterations: u64) -> PyResult<String> {
+pub fn play_threaded(iterations: u64) -> Results {
     let threads = num_cpus::get();
 
     let iterations_per_thread = iterations / threads as u64;
@@ -155,6 +161,15 @@ pub fn play_threaded(iterations: u64) -> PyResult<String> {
     for handle in handles {
         results += handle.join().unwrap();
     }
+    results
+}
+
+/// Play one billion iterations of the Monty Hall simulation,
+/// returning a formatted string with the result.
+#[pyfunction]
+fn play_one_billion_times() -> PyResult<String> {
+    let iterations = 1_000_000_000;
+    let results = play_threaded(iterations);
     let (switched_pct, stayed_pct) = results.calc_win_rate();
     Ok(format!(
         "Played {iterations} times, winning {switched_pct:.2}% of the time when switching and {stayed_pct:.2}% times when staying",
@@ -164,8 +179,15 @@ pub fn play_threaded(iterations: u64) -> PyResult<String> {
     ))
 }
 
+#[pyfunction]
+fn play(iterations: u64) -> PyResult<Results> {
+    Ok(play_threaded(iterations))
+}
+
 #[pymodule]
 fn monty_pyrs(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(play_threaded, m)?)?;
+    m.add_function(wrap_pyfunction!(play_one_billion_times, m)?)?;
+    m.add_function(wrap_pyfunction!(play, m)?)?;
+    m.add_class::<Results>()?;
     Ok(())
 }

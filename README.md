@@ -19,6 +19,9 @@ maturin develop --release # Pass --release flag to Cargo for speedups
 python run.py # Runs 1_000_000_000 Monty Hall simulations
 ```
 
+Run `cargo doc --open` to peruse the documentation. Run `cargo test` to
+run the doctests embedded in the documentation.
+
 ## Credits
 
 [PyO3](https://github.com/PyO3/pyo3) which provides macros for exposing

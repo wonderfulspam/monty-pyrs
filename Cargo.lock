@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "assert_approx_eq"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c07dab4369547dbe5114677b33fbbf724971019f3818172d59a97a61c774ffd"
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -93,6 +99,7 @@ dependencies = [
 name = "monty-pyrs"
 version = "0.1.0"
 dependencies = [
+ "assert_approx_eq",
  "derive_more",
  "num_cpus",
  "pyo3",
