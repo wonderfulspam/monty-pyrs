@@ -21,44 +21,13 @@ def reveal_goat(doors):
             return i
 
 
-# **Simulate random choice**
-# 
-# Simulate situation where the player randomly chooses whether to keep his initial choice or switch his choice.
-
-def simulate_random_choice(game: list):
-    wins = 0
-    attempts = 0
-
-    history = []
-
-    for doors in game:
-        attempts += 1
-
-        # Host reveals a door with goat.
-        goat = reveal_goat(doors)
-
-        # Player randomly chooses whether to keep initial choice or switch.
-        new_choice = randint(0, 1)
-        final_choice = 0 if new_choice == 0 else 2 if goat == 1 else 1
-
-        if (doors[final_choice] == True):
-            wins += 1
-
-        history.append(wins / attempts)
-
-    return wins, history
-
-
 # **Simulate initial choice**
 # 
 # Simulate situation where the player *only* keeps his initial choice and never switches.
 
 def simulate_keep_choice(game: list):
     wins = 0
-    attempts = 0
-
     for doors in game:
-        attempts += 1
         
         # User does not switch game.
         if (doors[0] == True):
@@ -73,11 +42,8 @@ def simulate_keep_choice(game: list):
 
 def simulate_switch_choice(game: list):
     wins = 0
-    attempts = 0
 
     for doors in game:
-        attempts += 1
-        
         # Host reveals a door with goat.
         goat = reveal_goat(doors)
 
@@ -90,7 +56,8 @@ def simulate_switch_choice(game: list):
     return wins
 
 def run(iterations: int):
-    game = generate_game(iterations // 2)
+    runs_per_play_type = iterations // 2
+    game = generate_game(runs_per_play_type)
     switched_wins = simulate_switch_choice(game)
     stayed_wins = simulate_keep_choice(game)
-    return switched_wins / iterations * 2, stayed_wins / iterations * 2
+    return switched_wins / runs_per_play_type, stayed_wins / runs_per_play_type

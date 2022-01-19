@@ -27,3 +27,6 @@ run the doctests embedded in the documentation.
 [PyO3](https://github.com/PyO3/pyo3) which provides macros for exposing
 Rust code to Python and [Maturin](https://maturin.rs) which handles the
 scaffolding.
+
+Python implementation adapted from
+[vaetas/monty_hall.py](https://gist.github.com/vaetas/7081d19815214e34512afa3016b014ea).
