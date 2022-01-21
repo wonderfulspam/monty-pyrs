@@ -20,7 +20,6 @@
 //! This is a non-goal.
 
 use derive_more::AddAssign; // Adds += overload for Results struct
-use num_cpus; // Gets no. of cpus to spawn threads on
 use pyo3::prelude::*; // Macros for exposing Rust code to Python
 use rand_core::{RngCore, SeedableRng}; // Traits for generating random numbers and seeding
 use rand_xorshift::XorShiftRng; // The fastest possible (?) random number generator
@@ -49,6 +48,7 @@ impl Results {
     /// ```rust
     /// use monty_pyrs::{Results, play_threaded};
     /// use assert_approx_eq::assert_approx_eq;
+    ///
     /// let results: Results = play_threaded(1_000_000);
     /// let (switched_pct, stayed_pct) = results.calc_win_rate();
     /// // Ensure we are within 0.5 of target percentage
@@ -63,6 +63,8 @@ impl Results {
     }
 }
 
+/// Holds the RNG for generating a random correct door
+/// as well as the impl for playing games.
 pub struct MontyHall<R> {
     rng: R,
 }
@@ -71,6 +73,16 @@ impl<R> MontyHall<R>
 where
     R: RngCore,
 {
+    /// Allows you to BYO random generator.
+    /// ```rust
+    /// use monty_pyrs::MontyHall;
+    /// use rand_xorshift::XorShiftRng;
+    /// use rand_core::SeedableRng;
+    ///
+    /// let rng = XorShiftRng::seed_from_u64(1337);
+    /// let mut monty = MontyHall::new_with_rng(rng);
+    /// let success = monty.play_single(true);
+    /// ```
     pub fn new_with_rng(rng: R) -> Self {
         Self { rng }
     }
@@ -78,6 +90,7 @@ where
     /// Play a single simulation of the Monty Hall problem.
     /// ```rust
     /// use monty_pyrs::MontyHall;
+    ///
     /// let mut monty = MontyHall::default();
     /// let success = monty.play_single(true);
     /// ```
@@ -106,6 +119,7 @@ where
     ///
     /// ```rust
     /// use monty_pyrs::{MontyHall, Results};
+    ///
     /// let mut monty = MontyHall::default();
     /// let results: Results = monty.play_multiple(1_000_000);
     /// ```
@@ -153,7 +167,7 @@ pub fn play_threaded(iterations: u64) -> Results {
     let iterations_per_thread = iterations / threads as u64;
     let mut handles = Vec::with_capacity(threads);
     for _ in 0..threads {
-        let iters = iterations_per_thread.clone();
+        let iters = iterations_per_thread;
         let mut monty = MontyHall::default();
         handles.push(std::thread::spawn(move || monty.play_multiple(iters)));
     }
@@ -180,6 +194,8 @@ fn play_one_billion_times() -> PyResult<String> {
 }
 
 #[pyfunction]
+/// Play a number of iterations of the Monty Hall simulation,
+/// returning the [Results]
 fn play(iterations: u64) -> PyResult<Results> {
     Ok(play_threaded(iterations))
 }
